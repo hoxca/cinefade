@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+const (
+	EtcDir = "/etc/cinefade"
+	VarDir = "/var/lib/cinefade"
+)
+
 func SaveBulbsState(bridge *hue.Bridge, filename string) {
 	type bulbState struct {
 		State hue.LightState `json:"state"`
@@ -29,7 +34,7 @@ func SaveBulbsState(bridge *hue.Bridge, filename string) {
 		bulbs = append(bulbs, &bulb)
 	}
 
-	jsonFile, err := os.Create("/var/lib/bulb/" + filename)
+	jsonFile, err := os.Create(VarDir + "/" + filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -49,7 +54,7 @@ func SetBulbsState(bridge *hue.Bridge, filename string) {
 
 	lights, _ := bridge.GetAllLights()
 
-	bulbsState, err := ioutil.ReadFile("/var/lib/bulb/" + filename)
+	bulbsState, err := ioutil.ReadFile(VarDir + "/" + filename)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
