@@ -119,7 +119,6 @@ func ControlBulbs(bridge *hue.Bridge, action string) {
 			light.Off()
 		} else {
 			light.On()
-			// light.SetLightTransition("80")
 		}
 	}
 }
