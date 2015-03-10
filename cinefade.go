@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/ccding/go-config-reader/config"
 	"github.com/savaki/go.hue"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 )
@@ -14,6 +16,27 @@ const (
 	EtcDir = "/etc/cinefade"
 	VarDir = "/var/lib/cinefade"
 )
+
+func GetBridge(debug bool) *hue.Bridge {
+	conf := config.NewConfig(EtcDir + "/cinefade.conf")
+	err := conf.Read()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hueIpAddr := conf.Get("", "hueIpAddr")
+	hueUser := conf.Get("", "hueUser")
+
+	if hueIpAddr == "" || hueUser == "" {
+		log.Fatal("One of configuration hueIpAddr|hueUser not found")
+	}
+
+	bridge := hue.NewBridge(hueIpAddr, hueUser)
+	if debug {
+		bridge.Debug()
+	}
+	return bridge
+}
 
 func GetAllBulbs(bridge *hue.Bridge) []*hue.Light {
 	lights, err := bridge.GetAllLights()
@@ -107,8 +130,7 @@ func main() {
 	flag.StringVar(&action, "action", "on", "lights on/off")
 	flag.Parse()
 
-	bridge := hue.NewBridge("192.168.1.99", "3d99dc627158727130a0d2a224445b")
-	//bridge.Debug()
+	bridge := GetBridge(false)
 
 	switch action {
 	case "on", "off":
