@@ -15,6 +15,15 @@ const (
 	VarDir = "/var/lib/cinefade"
 )
 
+func GetAllBulbs(bridge *hue.Bridge) []*hue.Light {
+	lights, err := bridge.GetAllLights()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	return lights
+}
+
 func SaveBulbsState(bridge *hue.Bridge, filename string) {
 	type bulbState struct {
 		State hue.LightState `json:"state"`
@@ -22,7 +31,7 @@ func SaveBulbsState(bridge *hue.Bridge, filename string) {
 	}
 	var bulbs []*bulbState
 
-	lights, _ := bridge.GetAllLights()
+	lights := GetAllBulbs(bridge)
 	for _, light := range lights {
 		bulbAttr, _ := light.GetLightAttributes()
 
@@ -52,7 +61,7 @@ func SetBulbsState(bridge *hue.Bridge, filename string) {
 	}
 	var bulbs []*bulbState
 
-	lights, _ := bridge.GetAllLights()
+	lights := GetAllBulbs(bridge)
 
 	bulbsState, err := ioutil.ReadFile(VarDir + "/" + filename)
 	if err != nil {
@@ -82,7 +91,7 @@ func SetBulbsState(bridge *hue.Bridge, filename string) {
 }
 
 func ControlBulbs(bridge *hue.Bridge, action string) {
-	lights, _ := bridge.GetAllLights()
+	lights := GetAllBulbs(bridge)
 	for _, light := range lights {
 		if action == "off" {
 			light.Off()
