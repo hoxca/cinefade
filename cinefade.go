@@ -74,7 +74,6 @@ func SaveBulbsState(bridge *hue.Bridge, filename string) {
 
 	bulbsState, _ := json.Marshal(bulbs)
 	jsonFile.Write(bulbsState)
-	jsonFile.Close()
 }
 
 func SetBulbsState(bridge *hue.Bridge, filename string) {
