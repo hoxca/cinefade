@@ -137,9 +137,17 @@ func main() {
 	case "register":
 		SaveBulbsState(bridge, "cinema.json")
 	case "cinema":
+		_, err := os.Stat(VarDir + "/cinema.json")
+		if err != nil {
+			log.Fatal("You must first use the register to save cinema lightstate")
+		}
 		SaveBulbsState(bridge, "current.json")
 		SetBulbsState(bridge, "cinema.json")
 	case "restore":
+		_, err := os.Stat(VarDir + "/current.json")
+		if err != nil {
+			log.Fatal("Can't call restore action without a backup state")
+		}
 		SetBulbsState(bridge, "current.json")
 	}
 }
