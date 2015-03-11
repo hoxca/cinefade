@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	URL = "http://muklo:32400/status/sessions"
+	// URL = "http://muklo:32400/status/sessions"
+	URL = "http://dockers:49158"
 )
 
 type Player struct {
@@ -30,7 +31,7 @@ type MediaContainer struct {
 	Video   Video    `xml:"Video"`
 }
 
-func GetHttpClient() *http.Client {
+func getHttpClient() *http.Client {
 	transport := &httpclient.Transport{
 		ConnectTimeout:        1 * time.Second,
 		RequestTimeout:        4 * time.Second,
@@ -42,33 +43,41 @@ func GetHttpClient() *http.Client {
 	return client
 }
 
-func Poll(client *http.Client) string {
-	req, _ := http.NewRequest("GET", URL, nil)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("can't access plex", err)
-	}
-	defer resp.Body.Close()
+func poll(client *http.Client, c chan<- string) {
+	for {
+		req, _ := http.NewRequest("GET", URL, nil)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal("can't access plex", err)
+		}
+		defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	//	body, err := ioutil.ReadFile("plex-stop.xml")
-	var m MediaContainer
-	xml.Unmarshal(body, &m)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		return ""
+		body, err := ioutil.ReadAll(resp.Body)
+		var m MediaContainer
+		xml.Unmarshal(body, &m)
+		if err != nil {
+			log.Fatal("error: %v", err)
+		}
+		switch m.Video.Player.State {
+		case "":
+			c <- "stopped"
+		case "paused":
+			c <- "paused"
+		case "playing":
+			c <- "playing"
+		default:
+			c <- "unknown"
+		}
+		time.Sleep(5000 * time.Millisecond)
 	}
-	switch m.Video.Player.State {
-	case "":
-		fmt.Println("Video is stopped")
-		return "stopped"
-	case "paused":
-		fmt.Println("Video is paused")
-		return "paused"
-	case "playing":
-		fmt.Println("Video is running")
-		return "playing"
-	default:
-		return ""
+}
+
+func CheckPlexStatus() {
+	client := getHttpClient()
+	c := make(chan string)
+	go poll(client, c)
+	for {
+		result := <-c
+		fmt.Println(result)
 	}
 }
