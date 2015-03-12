@@ -1,21 +1,16 @@
 package cinefade
 
 import (
-	//	"errors"
-	//	"fmt"
 	"github.com/savaki/go.hue"
 	"github.com/stretchr/goweb"
 	"github.com/stretchr/goweb/context"
 	"log"
-	//	"net"
-	//"net/http"
 	"os"
-	//	"os/signal"
-	// "strconv"
-	// "time"
 )
 
 func cinefadeSwitch(bridge *hue.Bridge, action string) {
+
+	c := make(chan string)
 	switch action {
 	case "on", "off":
 		ControlBulbs(bridge, action)
@@ -36,7 +31,9 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 		}
 		SetBulbsState(bridge, "current.json")
 	case "poll":
-		CheckPlexStatus()
+		RunCheckPlexStatus(bridge, c)
+	case "stop":
+		StopCheckPlexStatus()
 	}
 }
 

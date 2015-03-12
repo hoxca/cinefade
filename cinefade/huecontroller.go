@@ -2,7 +2,6 @@ package cinefade
 
 import (
 	"encoding/json"
-	//	"flag"
 	"fmt"
 	"github.com/ccding/go-config-reader/config"
 	"github.com/savaki/go.hue"
@@ -42,7 +41,6 @@ func GetAllBulbs(bridge *hue.Bridge) []*hue.Light {
 	lights, err := bridge.GetAllLights()
 	if err != nil {
 		fmt.Println("Error:", err)
-		os.Exit(1)
 	}
 	return lights
 }
