@@ -17,10 +17,13 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 	case "register":
 		SaveBulbsState(bridge, "cinema.json")
 	case "cinema":
-		//TODO: must avoid action if bulbs are off
-		_, err := os.Stat(VarDir + "/cinema.json")
-		if err != nil {
-			log.Fatal("You must first use the register to save cinema lightstate")
+		if IsOneOfBulbsOn() {
+			_, err := os.Stat(VarDir + "/cinema.json")
+			if err != nil {
+				log.Fatal("You must first use the register to save cinema lightstate")
+			}
+			SaveBulbsState(bridge, "current.json")
+			SetBulbsState(bridge, "cinema.json")
 		}
 		SaveBulbsState(bridge, "current.json")
 		SetBulbsState(bridge, "cinema.json")

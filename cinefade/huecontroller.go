@@ -45,6 +45,17 @@ func GetAllBulbs(bridge *hue.Bridge) []*hue.Light {
 	return lights
 }
 
+func IsOneOfBulbsOn(bridge *hue.Bridge) bool {
+	ligths := GetAllBulbs(bridge)
+	for _, light := range lights {
+		bulbAttr, _ := light.GetLightAttributes()
+		if bulbAttr.State.On {
+			return true
+		}
+	}
+	return false
+}
+
 func SaveBulbsState(bridge *hue.Bridge, filename string) {
 	type bulbState struct {
 		State hue.LightState `json:"state"`
