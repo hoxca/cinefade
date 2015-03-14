@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+var r = make(chan bool)
+
 func cinefadeSwitch(bridge *hue.Bridge, action string) {
 
 	c := make(chan string)
@@ -25,15 +27,13 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 			SaveBulbsState(bridge, "current.json")
 			SetBulbsState(bridge, "cinema.json")
 		}
-		SaveBulbsState(bridge, "current.json")
-		SetBulbsState(bridge, "cinema.json")
 	case "restore":
 		_, err := os.Stat(VarDir + "/current.json")
 		if err != nil {
 			log.Fatal("Can't call restore action without a backup state")
 		}
 		SetBulbsState(bridge, "current.json")
-	case "poll":
+	case "start":
 		RunCheckPlexStatus(bridge, c)
 	case "stop":
 		StopCheckPlexStatus()
