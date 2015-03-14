@@ -2,17 +2,13 @@ package cinefade
 
 import (
 	"encoding/xml"
+	"github.com/ccding/go-config-reader/config"
 	"github.com/mreiferson/go-httpclient"
 	"github.com/savaki/go.hue"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-)
-
-const (
-	URL = "http://muklo:32400/status/sessions"
-	//URL = "http://dockers:49160"
 )
 
 type Player struct {
@@ -45,6 +41,12 @@ func getHttpClient() *http.Client {
 
 func poll(client *http.Client, c chan string) {
 	log.Println("Launch plex poller")
+	conf := config.NewConfig(EtcDir + "/cinefade.conf")
+	err := conf.Read()
+	if err != nil {
+		log.Fatal(err)
+	}
+	plexUrl := conf.Get("", "plexUrl")
 
 	for {
 		select {
@@ -53,7 +55,7 @@ func poll(client *http.Client, c chan string) {
 			return
 		case <-time.After(5000 * time.Millisecond):
 			log.Println("Exec plex poller")
-			req, _ := http.NewRequest("GET", URL, nil)
+			req, _ := http.NewRequest("GET", plexUrl, nil)
 			resp, err := client.Do(req)
 			if err != nil {
 				log.Println("can't access plex", err)
