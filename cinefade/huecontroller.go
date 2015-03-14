@@ -46,7 +46,7 @@ func GetAllBulbs(bridge *hue.Bridge) []*hue.Light {
 }
 
 func IsOneOfBulbsOn(bridge *hue.Bridge) bool {
-	ligths := GetAllBulbs(bridge)
+	lights := GetAllBulbs(bridge)
 	for _, light := range lights {
 		bulbAttr, _ := light.GetLightAttributes()
 		if bulbAttr.State.On {
