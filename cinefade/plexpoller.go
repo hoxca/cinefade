@@ -52,6 +52,7 @@ func poll(client *http.Client, c chan string) {
 		select {
 		case <-r:
 			log.Println("! exit plex poller")
+			r <- true
 			return
 		case <-time.After(5000 * time.Millisecond):
 			log.Println("Exec plex poller")
@@ -59,6 +60,7 @@ func poll(client *http.Client, c chan string) {
 			resp, err := client.Do(req)
 			if err != nil {
 				log.Println("can't access plex", err)
+				c <- "unknown"
 			} else {
 				defer resp.Body.Close()
 
@@ -120,6 +122,5 @@ func RunCheckPlexStatus(bridge *hue.Bridge, c chan string) {
 }
 
 func StopCheckPlexStatus() {
-	r <- true
 	r <- true
 }
