@@ -2,11 +2,11 @@ package cinefade
 
 import (
 	"encoding/xml"
+	"github.com/blackjack/syslog"
 	"github.com/ccding/go-config-reader/config"
 	"github.com/mreiferson/go-httpclient"
 	"github.com/savaki/go.hue"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -40,26 +40,25 @@ func getHttpClient() *http.Client {
 }
 
 func poll(client *http.Client, c chan string) {
-	log.Println("Launch plex poller")
+	syslog.Info("Launch plex poller")
 	conf := config.NewConfig(EtcDir + "/cinefade.conf")
 	err := conf.Read()
 	if err != nil {
-		log.Fatal(err)
+		syslog.Critf("cannot read config: %v", err)
 	}
 	plexUrl := conf.Get("", "plexUrl")
 
 	for {
 		select {
 		case <-r:
-			log.Println("! exit plex poller")
+			syslog.Info("Exit from plex poller")
 			r <- true
 			return
 		case <-time.After(5000 * time.Millisecond):
-			log.Println("Exec plex poller")
 			req, _ := http.NewRequest("GET", plexUrl, nil)
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Println("can't access plex", err)
+				syslog.Warningf("can't access plex %v", err)
 				c <- "unknown"
 			} else {
 				defer resp.Body.Close()
@@ -68,7 +67,7 @@ func poll(client *http.Client, c chan string) {
 				var m MediaContainer
 				xml.Unmarshal(body, &m)
 				if err != nil {
-					log.Fatal("error: %v", err)
+					syslog.Critf("error: %v", err)
 				}
 				switch m.Video.Player.State {
 				case "":
@@ -86,26 +85,23 @@ func poll(client *http.Client, c chan string) {
 }
 
 func hueControl(bridge *hue.Bridge, c chan string) {
-	log.Println("Launch plex status")
+	syslog.Info("Launch plex status")
 	time.Sleep(1000 * time.Millisecond)
 	var previous = "stopped"
 	for {
 		select {
 		case <-r:
-			log.Println("! exit plex status")
+			syslog.Info("Exit from plex status")
 			return
 		case <-time.After(5000 * time.Millisecond):
-			log.Println("Exec status poller")
 			switch <-c {
 			case "stopped", "paused":
 				if previous == "cinema" {
-					log.Println("restore")
 					cinefadeSwitch(bridge, "restore")
 					previous = "stopped"
 				}
 			case "playing":
 				if previous == "stopped" {
-					log.Println("cinema")
 					cinefadeSwitch(bridge, "cinema")
 					previous = "cinema"
 				}

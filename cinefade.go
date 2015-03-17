@@ -3,8 +3,8 @@ package main
 import (
 	"./cinefade"
 	"flag"
+	"github.com/blackjack/syslog"
 	"github.com/stretchr/goweb"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -17,6 +17,8 @@ const (
 )
 
 func main() {
+
+	syslog.Openlog("cinefade", syslog.LOG_PID, syslog.LOG_USER)
 
 	var action string
 	flag.StringVar(&action, "action", "on", "lights on/off")
@@ -37,23 +39,26 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	listener, listenErr := net.Listen("tcp", Address)
-	log.Printf("  visit: %s", Address)
+	syslog.Info("Server cinefade started")
+	syslog.Infof("visit: %s", Address)
 
 	if listenErr != nil {
-		log.Fatalf("Could not listen: %s", listenErr)
+		syslog.Critf("Could not listen: %s", listenErr)
+		os.Exit(1)
 	}
 
 	go func() {
 		for _ = range c {
 			// sig is a ^C, handle it
 			// stop the HTTP server
-			log.Print("Stopping the server...")
+			syslog.Info("Stopping the cinefade server...")
 			listener.Close()
 
-			log.Print("Tearing down...")
-			log.Fatal("Finished - bye bye.  ;-)")
+			syslog.Info("Tearing down...")
+			os.Exit(0)
 		}
 	}()
 
-	log.Fatalf("Error in Serve: %s", s.Serve(listener))
+	syslog.Critf("Error in Serve: %s", s.Serve(listener))
+	os.Exit(1)
 }

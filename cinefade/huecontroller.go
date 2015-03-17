@@ -3,10 +3,10 @@ package cinefade
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/blackjack/syslog"
 	"github.com/ccding/go-config-reader/config"
 	"github.com/savaki/go.hue"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 )
@@ -20,14 +20,15 @@ func GetBridge(debug bool) *hue.Bridge {
 	conf := config.NewConfig(EtcDir + "/cinefade.conf")
 	err := conf.Read()
 	if err != nil {
-		log.Fatal(err)
+		syslog.Critf("cannot read config: %v", err)
+		os.Exit(1)
 	}
 
 	hueIpAddr := conf.Get("", "hueIpAddr")
 	hueUser := conf.Get("", "hueUser")
 
 	if hueIpAddr == "" || hueUser == "" {
-		log.Fatal("One of configuration hueIpAddr|hueUser not found")
+		syslog.Crit("One of configuration hueIpAddr|hueUser not found")
 	}
 
 	bridge := hue.NewBridge(hueIpAddr, hueUser)

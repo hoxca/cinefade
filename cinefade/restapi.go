@@ -1,10 +1,10 @@
 package cinefade
 
 import (
+	"github.com/blackjack/syslog"
 	"github.com/savaki/go.hue"
 	"github.com/stretchr/goweb"
 	"github.com/stretchr/goweb/context"
-	"log"
 	"os"
 )
 
@@ -19,20 +19,28 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 	case "register":
 		SaveBulbsState(bridge, "cinema.json")
 	case "cinema":
+		syslog.Info("Switch bulbs for cinema")
 		if IsOneOfBulbsOn(bridge) {
 			_, err := os.Stat(VarDir + "/cinema.json")
 			if err != nil {
-				log.Fatal("You must first use the register to save cinema lightstate")
+				syslog.Info("You must first use the register to save cinema lightstate")
 			}
 			SaveBulbsState(bridge, "current.json")
 			SetBulbsState(bridge, "cinema.json")
+		} else {
+			syslog.Info("Bulbs are off, don't expect any change")
 		}
 	case "restore":
-		_, err := os.Stat(VarDir + "/current.json")
-		if err != nil {
-			log.Fatal("Can't call restore action without a backup state")
+		syslog.Info("Restore bulbs settings")
+		if IsOneOfBulbsOn(bridge) {
+			_, err := os.Stat(VarDir + "/current.json")
+			if err != nil {
+				syslog.Info("Can't call restore action without a backup state")
+			}
+			SetBulbsState(bridge, "current.json")
+		} else {
+			syslog.Info("Bulbs are off, don't expect any change")
 		}
-		SetBulbsState(bridge, "current.json")
 	case "start":
 		RunCheckPlexStatus(bridge, c)
 	case "stop":
