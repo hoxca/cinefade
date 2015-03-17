@@ -59,31 +59,26 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 
 func MapRoutes(bridge *hue.Bridge) {
 	goweb.MapBefore(func(c context.Context) error {
-		// add a custom header
 		c.HttpResponseWriter().Header().Set("X-Custom-Header", "Goweb")
 		return nil
 	})
 
 	goweb.MapAfter(func(c context.Context) error {
-		// TODO: log this
-		log.Println("After resquest")
 		return nil
 	})
 
 	goweb.Map("/", func(c context.Context) error {
-		return goweb.Respond.With(c, 200, []byte("Welcome to the cinefade webapp"))
+		return goweb.Respond.With(c, 200, []byte("Welcome to the cinefade webapp\n"))
 	})
 
 	goweb.Map("/cinefade/{action}", func(c context.Context) error {
-		// get the path value as an integer
 		action := c.PathValue("action")
 		cinefadeSwitch(bridge, action)
-		// respond with the status
-		return goweb.Respond.With(c, 200, []byte("action "+action+" was done by cinefade"))
+		syslog.Infof("action %s was done by cinefade", action)
+		return goweb.Respond.With(c, 200, []byte("Action '"+action+"' was done by cinefade\n"))
 	})
 
 	goweb.Map(func(c context.Context) error {
-		// just return a 404 message
 		return goweb.API.Respond(c, 404, nil, []string{"File not found"})
 	})
 }
