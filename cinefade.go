@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./cinefade"
+	"cinefade/cinefade"
 	"flag"
 	"github.com/blackjack/syslog"
 	"github.com/stretchr/goweb"
