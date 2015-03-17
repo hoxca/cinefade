@@ -6,9 +6,15 @@ import (
 	"github.com/stretchr/goweb"
 	"github.com/stretchr/goweb/context"
 	"os"
+	"time"
 )
 
 var r = make(chan bool)
+
+func cinefadeExit() {
+	time.Sleep(500 * time.Millisecond)
+	os.Exit(0)
+}
 
 func cinefadeSwitch(bridge *hue.Bridge, action string) {
 
@@ -45,6 +51,9 @@ func cinefadeSwitch(bridge *hue.Bridge, action string) {
 		RunCheckPlexStatus(bridge, c)
 	case "stop":
 		StopCheckPlexStatus()
+	case "exit":
+		syslog.Info("Stopping the cinefade server...")
+		go cinefadeExit()
 	}
 }
 
